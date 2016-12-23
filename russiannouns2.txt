@@ -1,5 +1,5 @@
-nul a e u om y ov ax am ami j i  
-\pattern 2
+# nul a e u om y ov ax am ami j i  
+# pattern 2
 nom sg 1 
 gen sg 5
 acc sg 3
