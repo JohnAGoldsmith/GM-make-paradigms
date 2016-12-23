@@ -1,14 +1,14 @@
 # nul a e u om y ov ax am ami j i  
 # pattern 2
-nom sg 1 
-gen sg 5
-acc sg 3
-loc sg 2 
-dat sg 2
-inst sg 10
-nom pl 5
-gen pl 0
-acc pl 5
-loc pl 7
-dat pl 8
-inst pl 9
+nom sg a 
+gen sg y
+acc sg u
+loc sg e 
+dat sg e
+inst sg j
+nom pl y
+gen pl nul
+acc pl y
+loc pl ax
+dat pl am
+inst pl ami
