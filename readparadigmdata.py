@@ -14,17 +14,17 @@ np.set_printoptions(precision=2)
 
  
 class CParadigm:
-        FV_tuple_to_morph = {}             # key is  a tuple of a set of feature values, value is a morph
-        row_number_to_set_of_FVs =[]
-        row_number_to_morph_number =[]
-        feature_values = {}                     # key is name of feature-value; value is its count
-        morpheme_to_index = {}                      # key is morpheme and value is an integer
-        morpheme_number_to_morph= []    
-        TPM_length = 0                          # number of entries in TPM (in paradigm)
-        TPM = np.zeros
+        def __init__(self):
+                self.FV_tuple_to_morph = {}             # key is  a tuple of a set of feature values, value is a morph
+                self.row_number_to_set_of_FVs =[]
+                self.row_number_to_morph_number =[]
+                self.feature_values = {}                     # key is name of feature-value; value is its count
+                self.morpheme_to_index = {}                      # key is morpheme and value is an integer
+                self.morpheme_number_to_morph= []    
+                self.TPM_length = 0                          # number of entries in TPM (in paradigm)
+                self.TPM = np.zeros
         
         def readparadigm(self,lines):
-
                 for lineno in range(len(lines)):
                    line = lines[lineno]
                    items = line.split()
@@ -40,13 +40,13 @@ class CParadigm:
                             self.morpheme_to_index[thismorph] = morphno
                    else:
                        morph = items.pop(-1)
-                       morphindex=thisparadigm.morpheme_to_index[morph]
+                       morphindex=self.morpheme_to_index[morph]
                        feature_set=set(items)
                        self.row_number_to_set_of_FVs.append(feature_set)      
                        self.FV_tuple_to_morph[tuple(feature_set)] = morph
                        for itemno in range(len(items)):
                           thisfv = items[itemno]
-                          if thisfv not in thisparadigm.feature_values:
+                          if thisfv not in self.feature_values:
                              self.feature_values[thisfv] = 1
                           else:
                              self.feature_values[thisfv] += 1
@@ -56,7 +56,7 @@ class CParadigm:
                 self.TPM_length = numberofrows
                 self.TPM = np.zeros((numberofrows,number_of_morphemes))
                 for row_no in range(numberofrows):
-                   self.TPM[row_no, thisparadigm.row_number_to_morph_number[row_no]] = 1
+                   self.TPM[row_no, self.row_number_to_morph_number[row_no]] = 1
 
                
 
@@ -64,7 +64,7 @@ class CParadigm:
 
 
         def printparadigm(self):
-                print (thisparadigm.TPM )
+                print (self.TPM )
                 number_of_rows= len(self.row_number_to_morph_number)
 
                 print ("List of feature value labels and paradigm space dict:")
@@ -91,18 +91,13 @@ class CParadigm:
 print (" --------- Part 1---------------")
 
 filename = "russiannouns1.txt"
+thisparadigm1=CParadigm()
 
-thisparadigm=CParadigm()
- 
-lines = [line.strip() for line in open(filename)]
-
-thisparadigm.readparadigm(lines)
-
- 
-thisparadigm.printparadigm()
-
-
-
+with open(filename) as f:
+   lines = f.readlines()
+#lines = [line.strip() for line in open(filename)]
+thisparadigm1.readparadigm(lines)
+thisparadigm1.printparadigm()
  
  
  
@@ -122,5 +117,15 @@ thisparadigm.printparadigm()
 #dat pl 8
 #inst pl 9
 
+ 
+print (" --------- Part 2---------------")
+filename = "russiannouns2.txt"
+thisparadigm2=CParadigm()
+with open(filename) as f:
+   lines = f.readlines()
+#lines = [line.strip() for line in open(filename)]
+thisparadigm2.readparadigm(lines)
+thisparadigm2.printparadigm()
+ 
  
        
