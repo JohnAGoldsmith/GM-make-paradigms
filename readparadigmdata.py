@@ -12,18 +12,36 @@ import csv
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
 
+
+def printmatrix(array,top_column_labels, side_row_labels):
+                number_of_columns= len(top_column_labels)
+                number_of_rows= len(side_row_labels)
+                firstcolumnwidth =15
+                print ("  ", end="")
+                print (" "*firstcolumnwidth, end="")
+                for colno in range(number_of_columns):
+                        print ('%-8s'%top_column_labels[colno], end="")
+                print ()
+                for rowno in range(number_of_rows):
+                        print ('%-15s'%side_row_labels[rowno],end="")
+                        for colno in range(number_of_columns):
+                                print ('%6.2f  '% array.item(rowno, colno), end = "")
+                        print ()
+
+
  
 class CParadigm:
         def __init__(self):
                 self.FV_tuple_to_morph = {}             # key is  a tuple of a set of feature values, value is a morph
                 self.row_number_to_set_of_FVs =[]
+                self.row_number_to_list_of_FVs = []
                 self.row_number_to_morph_number =[]
                 self.feature_values = {}                     # key is name of feature-value; value is its count
                 self.morpheme_to_index = {}                      # key is morpheme and value is an integer
                 self.morpheme_number_to_morph= []    
                 self.TPM_length = 0                          # number of entries in TPM (in paradigm)
                 self.TPM = np.zeros
-        
+                
         def readparadigm(self,lines):
                 for lineno in range(len(lines)):
                    line = lines[lineno]
@@ -41,6 +59,7 @@ class CParadigm:
                    else:
                        morph = items.pop(-1)
                        morphindex=self.morpheme_to_index[morph]
+                       self.row_number_to_list_of_FVs.append(items)
                        feature_set=set(items)
                        self.row_number_to_set_of_FVs.append(feature_set)      
                        self.FV_tuple_to_morph[tuple(feature_set)] = morph
@@ -57,16 +76,26 @@ class CParadigm:
                 self.TPM = np.zeros((numberofrows,number_of_morphemes))
                 for row_no in range(numberofrows):
                    self.TPM[row_no, self.row_number_to_morph_number[row_no]] = 1
-
+                self.TPM_inverse = np.linalg.pinv(self.TPM)
                
 
        
 
 
         def printparadigm(self):
-                print (self.TPM )
+                #print (self.TPM )
                 number_of_rows= len(self.row_number_to_morph_number)
+                number_of_columns = len(self.morpheme_number_to_morph)
+                print ("This TPM matrix")
+                printmatrix(self.TPM,self.morpheme_number_to_morph, self.row_number_to_list_of_FVs)
 
+ 
+
+
+
+
+
+               
                 print ("List of feature value labels and paradigm space dict:")
                 for entry in self.row_number_to_set_of_FVs:
                         tuple_of_entry = tuple(entry)
@@ -79,13 +108,45 @@ class CParadigm:
                         morph_number_recompute = self.morpheme_to_index[morph]
                         print ("row: ", no,"   ",morph_number, morph, morph_number_recompute  )
                 Y,s,Vh = np.linalg.svd(self.TPM)
-                #print ("Y\n\n",Y)
-                #print ("\ns\n\n",s)
-                #print("Vh",Vh)
+
+
+
                 pi = np.linalg.pinv(self.TPM)
-                print ("pseudoinverse\n\n", pi)
-                print ("\npseudoinverse times matrix\n\n", np.matmul(pi,self.TPM))
-                print ("\nmatrix times pseudoinverse \n\n", np.matmul(self.TPM,pi))
+                print ("pseudoinverse\n\n" )
+                printmatrix(pi,self.morpheme_number_to_morph, self.row_number_to_list_of_FVs)
+
+
+                pi_times_matrix = np.matmul(pi,self.TPM)
+
+                print ("\npseudoinverse times matrix\n\n")
+                firstcolumnwidth =15
+                print ("  ", end="")
+                print (" "*firstcolumnwidth, end="")
+                for colno in range(number_of_columns):
+                        print ('%-8s'%self.morpheme_number_to_morph[colno], end="")
+                print ()
+                for rowno in range(number_of_rows):
+                        print ('%-15s'%self.row_number_to_list_of_FVs[rowno],end="")
+                        for colno in range(number_of_columns):
+                                print ('%6.2f  '% pi_times_matrix.item(rowno, colno), end = "")
+                        print ()
+
+
+
+
+                print ("\nmatrix times pseudoinverse \n\n" )
+                MtimesPI =  np.matmul(self.TPM,pi)
+                firstcolumnwidth =15
+                print ("  ", end="")
+                print (" "*firstcolumnwidth, end="")
+                for colno in range(number_of_columns):
+                        print ('%-8s'%self.morpheme_number_to_morph[colno], end="")
+                print ()
+                for rowno in range(number_of_rows):
+                        print ('%-15s'%self.row_number_to_list_of_FVs[rowno],end="")
+                        for colno in range(number_of_columns):
+                                print ('%6.2f  '% MtimesPI.item(rowno, colno), end = "")
+                        print ()
 
 
 print (" --------- Part 1---------------")
@@ -128,4 +189,8 @@ thisparadigm2.readparadigm(lines)
 thisparadigm2.printparadigm()
  
  
-       
+matrix1 = np.zeros ((12,12))
+matrix1=np.matmul(thisparadigm1.TPM_inverse, thisparadigm2.TPM)
+matrix2=np.matmul(thisparadigm2.TPM_inverse, thisparadigm1.TPM)
+print ("matrix1\n", matrix1)
+print ("matrix2\n", matrix1)
