@@ -22,59 +22,18 @@ def makestring(arg):
     else:
         return  arg 
 
-# this is not being used, and should be deleted
-class FVSpace:
-        def __init__(self, paradigm):
-                self.FV_to_morph_dict = {} # key is a feature value (string) and value is a dict, which has a morpheme as its key and a value of ?
-                self.morph_to_FV_dict = {} # key is a morpheme, value is a dict whose key is a FV and whose value is a count;
-                self.morph_to_FV_coordinate = {}
-                numberofrows = len(paradigm.row_number_to_set_of_FVs)
-                for row_number in  range(numberofrows):
-                        print ("row number", row_number, end=" ")
-                        morphemeno = paradigm.row_number_to_morph_number[row_number]
-                        morpheme = paradigm.morpheme_number_to_morph[morphemeno]
-                        print ("morpheme and number", morpheme, morphemeno)
-                        if morpheme not in self.morph_to_FV_dict:
-                                self.morph_to_FV_dict[morpheme] = dict()
-                        for FV in paradigm.row_number_to_list_of_FVs[row_number]:
-                                if FV not in self.morph_to_FV_dict[morpheme]:
-                                        self.morph_to_FV_dict[morpheme][FV] = 0
-                                self.morph_to_FV_dict[morpheme][FV] += 1
-                                print ("counts ", FV, " ", self.morph_to_FV_dict[morpheme][FV] )
-                for morpheme  in  paradigm.morpheme_number_to_morph :
-                        print ("45 morpheme ", morpheme)
-                        total = 0.0
-                        if morpheme in self.morph_to_FV_dict:
-                                print ("48", morpheme)
-                                self.morph_to_FV_coordinate[morpheme] = dict()
-                                for FV in self.morph_to_FV_dict[morpheme]:
-                                        total += float(self.morph_to_FV_dict[morpheme][FV]) * self.morph_to_FV_dict[morpheme][FV]
-                                denominator = math.sqrt(total)
-                                print ("denominator total", denominator, total)
-                                if FV not in self.morph_to_FV_coordinate[morpheme]:
-                                        self.morph_to_FV_coordinate[morpheme][FV] = 0.0
-                                print ("56  morpheme FV", morpheme, FV)
-                                self.morph_to_FV_coordinate[morpheme][FV] += self.morph_to_FV_dict[morpheme][FV] / denominator
-                                print (morpheme, FV, self.morph_to_FV_coordinate[morpheme][FV])
-               
-
+ 
 def printmatrix(array,top_column_labels, side_row_labels):
-                #number_of_columns= len(top_column_labels)
-                #number_of_rows= len(side_row_labels)
                 (number_of_rows, number_of_columns) = array.shape
                 firstcolumnwidth =13
                 print ("   ", end="")
                 print (" "*firstcolumnwidth, end="")
                 for colno in range(number_of_columns):
-                        #print ("69 colno" , colno, " ", end="")
-                        #print ("69", top_column_labels)
-                        #print ("71 ", top_column_labels[colno], colno,  "number of cols", number_of_columns, end= " ")
                         if colno >= len(top_column_labels):
                                 break
                         print ('%-8s'%makestring(top_column_labels[colno]), end="")
                 print ()
                 for rowno in range(number_of_rows):
-                        #print ("75 number of rows", rowno, number_of_rows)
                         print ('%-15s'%side_row_labels[rowno],end="")
                         for colno in range(number_of_columns):
                                 print ('%6.2f  '% array.item(rowno, colno), end = "")
@@ -154,7 +113,6 @@ class CParadigm:
                           else:
                              self.FVs[thisfv] += 1
                        self.row_number_to_morph_number.append(morpheme_index)
-                #self.numberofrows_in_paradigm = len(self.row_number_to_list_of_FVs)
                 self.TPM = np.zeros((self.get_length_of_paradigm(), self.get_number_of_morphemes()))
                 for row_no in range(self.get_length_of_paradigm()):
                    self.TPM[row_no, self.row_number_to_morph_number[row_no]] = 1
@@ -174,7 +132,6 @@ class CParadigm:
                                 if FV not in self.morph_to_FV_dict[morpheme]:
                                         self.morph_to_FV_dict[morpheme][FV] = 0
                                 self.morph_to_FV_dict[morpheme][FV] += 1
-                                #print ("counts, morpheme", morpheme,"Feature value", FV, " ", self.morph_to_FV_dict[morpheme][FV] )
                 
                 self.B = np.zeros((self.get_number_of_FVs(), self.get_number_of_morphemes()))
 
@@ -195,7 +152,6 @@ class CParadigm:
 
 
         def printparadigm(self):
-                #print (self.TPM )
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
                 print ("\nThis TPM matrix Phi")
@@ -210,8 +166,6 @@ class CParadigm:
                 string2 ="  {:<10} {:20} {:<20}" 
                 print (string1.format('row number', 'feature values', 'morpheme number'))
                 for row_number in range(number_of_rows):
-                        #tuple_of_entry = tuple(set(entry))
-                        #this_morph=self.FV_tuple_to_morpheme[tuple_of_entry]
                         print (string2.format(rowno, self.get_stringized_FV(row_number), self.row_number_to_morph_number[row_number] ))
                         rowno += 1
                  
@@ -225,7 +179,6 @@ class CParadigm:
 
                 pi = np.linalg.pinv(self.TPM)
                 print ("\npseudoinverse of Phi" )
-                #printmatrix(pi,self.row_number_to_list_of_FVs, self.morpheme_list)
                 printmatrix(pi, self.get_stringized_FVs(),self.morpheme_list)
 
 
@@ -252,29 +205,12 @@ thisparadigm1=CParadigm()
 
 with open(filename) as f:
    lines = f.readlines()
-#lines = [line.strip() for line in open(filename)]
 thisparadigm1.readparadigm(lines)
 thisparadigm1.printparadigm()
  
  
  
  
-# example:
-#nul a e u om y ov ax am ami j i  
-#\pattern 1
-#nom sg 0 
-#gen sg 1
-#acc sg 0
-#loc sg 2 
-#dat sg 3
-#inst sg 4
-#nom pl 5
-#gen pl 6
-#acc pl 5
-#loc pl 7
-#dat pl 8
-#inst pl 9
-
 if (True):
         print (" --------- Part 2---------------")
         filename = "russiannouns2.txt"
