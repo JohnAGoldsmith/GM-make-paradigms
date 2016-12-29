@@ -23,9 +23,12 @@ def makestring(arg):
         return  arg 
 
  
-def printmatrix(array,top_column_labels, side_row_labels):
+def printmatrix(array,top_column_labels, side_row_labels,integerflag=False):
                 (number_of_rows, number_of_columns) = array.shape
-                firstcolumnwidth =13
+                if integerflag:
+                        firstcolumnwidth = 13        
+                else:
+                        firstcolumnwidth =15
                 print ("   ", end="")
                 print (" "*firstcolumnwidth, end="")
                 for colno in range(number_of_columns):
@@ -34,62 +37,123 @@ def printmatrix(array,top_column_labels, side_row_labels):
                         print ('%-8s'%makestring(top_column_labels[colno]), end="")
                 print ()
                 for rowno in range(number_of_rows):
-                        print ('%-15s'%side_row_labels[rowno],end="")
+                        if integerflag:
+                                print ('%-11s'%side_row_labels[rowno],end="")
+                        else:
+                                print  ('%-15s'%side_row_labels[rowno],end="")
                         for colno in range(number_of_columns):
-                                print ('%6.2f  '% array.item(rowno, colno), end = "")
+                                value = array.item(rowno, colno)
+                                #print (value) 
+                                if value < 0.01 and value >  -.01:
+                                        print ('     -  ', end="")
+                                elif integerflag:
+                                        print ('%6d  '%int(value), end="")                    
+                                else:
+                                        print ( '%6.2f  '% value, end = "")
                         print ()
+def scoreFV(FV):
+                if FV == "past":
+                        score = 2
+                elif FV == "present":
+                        score = 2.2
+                elif FV == "1st":
+                        score = 4.1
+                elif FV == "2nd":
+                        score = 4.2
+                elif FV == "3rd":
+                        score = 4.3
+                elif FV == "singular" or FV == "sg":
+                        score = 8.1 
+                elif FV == "plural" or FV == "pl":
+                        score = 8.3
+                elif FV == "nom":
+                        score = 7.0
+                elif FV == "acc":
+                        score = 7.1
+                elif FV == "gen":
+                        score = 7.2
+                elif FV == "dat":
+                        score = 7.3
+                elif FV == "loc":
+                        score = 7.4
+                elif FV == "inst":
+                        score = 7.5
+                else:
+                        score = 8
+                return score
+                        
+def sortFVs(FVs):         
+                return sorted(FVs,key = scoreFV)
 
- 
+
+
+
 class CParadigm:
         def __init__(self):
-                self.row_number_to_set_of_FVs =[]
+                self.number_of_rows_in_paradigm = 0
+                #self.row_number_to_set_of_FVs =[]
                 self.row_number_to_list_of_FVs = []
                 self.row_number_to_morph_number =[]
-                self.FVs = {}                     # key is name of feature-value; value is its count
-                self.morpheme_to_index = {}                      # key is morpheme and value is an integer
-                self.morpheme_list= []    
-                self.TPM_length = 0                          # number of entries in TPM (in paradigm)
-                self.TPM = np.zeros
-                self.B=np.zeros
-                self.FV_tuple_to_morpheme = {}             # key is  a tuple of a set of feature values, value is a morph
+                self.FV_list = []
+                self.FVs= {}
                 self.FV_to_morph_dict = {} # key is a feature value (string) and value is a dict, which has a morpheme as its key and a value of ?
                 self.morph_to_FV_dict = {} # key is a morpheme, value is a dict whose key is a FV and whose value is a count;
                 self.morph_to_FV_coordinate = {}
-                self.number_of_rows_in_paradigm = 0
+                self.morpheme_list= []    
+                self.morpheme_to_index = {}                      # key is morpheme and value is an integer
+                self.TPM_length = 0                          # number of entries in TPM (in paradigm)
+                self.TPM = np.zeros
+                self.B=np.zeros
+
         def     get_FVs(self):
-                        return list(self.FVs.keys())
+                        return self.FV_list
         def     get_number_of_FVs(self):
-                        return len(self.get_FVs())
+                        return len(self.FV_list)
         def     get_FV(self, index):
-                        return (self.get_FVs()[index])
+                        return self.get_FVs()[index]
+        def     get_FV_index(self,fv):
+                        return self.FV_list.index(fv)
+        def     sortFVs(self):
+                        self.FV_list.sort(key = scoreFV)
         def     get_morphemes(self):
                         return  self.morpheme_list 
         def     get_morpheme(self, index):
                         return self.morpheme_list[index]
-        def     get_number_of_FVs(self):
-                        return len(self.get_FVs())
         def     get_number_of_morphemes(self):
-                        return len(self.get_morphemes())
+                        return len(self.morpheme_list)
         def     get_length_of_paradigm(self):
                         return len(self.row_number_to_list_of_FVs)
         def     get_stringized_FV(self, index):
                         return "-".join(self.row_number_to_list_of_FVs[index])
         def     get_stringized_FVs(self):
                         output = list()
-                        for set_of_FVs in self.row_number_to_set_of_FVs:
+                        for set_of_FVs in self.row_number_to_list_of_FVs:
                                 output.append("-".join(set_of_FVs))                                          
                         return output
 
-      
+        def     makePhi(self):
+                        width =  self.get_number_of_morphemes()
+                        height = self.get_length_of_paradigm()
+                        self.Phi = np.zeros((height,width ))      
+                        for row_number in range(height):
+                                FVs = self.row_number_to_list_of_FVs[row_number]
+                                for FV in FVs:
+                                        FVno = self.FV_to_index[FV]
+                                        self.Phi[row_number,FVno] = 1
+		
 
         # The paradigm includes a TPM which is an np.array, and B, which is also a np.arry.
         # TPM: number of rows is the size of the paradigm, and the number of columns is the number of morphemes.
         # B:   number of rows is the number of FVs,        and the number of columns is the number of morphemes.
+        # Phi is a matrix with sets of FVs (the paradigm positions) as its rows, and morphemes as its columns
         def readparadigm(self,lines):
+                self.number_of_rows_in_paradigm = 0	
                 for lineno in range(len(lines)):
                    line = lines[lineno]
                    items = line.split()
                    if items[0] == "#":
+                      if items[1] == "end":
+                        break
                       if items[1] == "pattern":
                          pattern_label = items[2]
                       else:
@@ -98,25 +162,32 @@ class CParadigm:
                             thismorph = morphemes[morphno] 
                             self.morpheme_list.append(thismorph)
                             self.morpheme_to_index[thismorph] = morphno
-                   else:
+                   else:                                                # read the entries, one row per position in paradigm
+                       self.number_of_rows_in_paradigm += 1
                        morpheme = items.pop(-1)
                        morpheme_index=self.morpheme_to_index[morpheme]
-                       self.row_number_to_list_of_FVs.append(items)
-                       feature_set = set(items)
-                       feature_set_tuple=tuple(set(items))  
-                       self.row_number_to_set_of_FVs.append(feature_set)     # this is no longer used. 
-                       self.FV_tuple_to_morpheme[feature_set_tuple] = morpheme  # this is ugly and should be done better
-                       for itemno in range(len(items)):
-                          thisfv = items[itemno]
-                          if thisfv not in self.FVs:
-                             self.FVs[thisfv] = 1
-                          else:
-                             self.FVs[thisfv] += 1
+                       FVs = sorted(items, key = scoreFV)                 #the FVs are now sorted inside each row
+                       self.row_number_to_list_of_FVs.append(FVs)
                        self.row_number_to_morph_number.append(morpheme_index)
+                       #feature_set = set(items)
+                       #feature_set_tuple=tuple(set(items))  
+                       #self.row_number_to_set_of_FVs.append(feature_set)     # this is no longer used. 
+                       #self.FV_tuple_to_morpheme[feature_set_tuple] = morpheme  # this is ugly and should be done better
+                       for thisfv in FVs:
+                          if thisfv not in self.FVs:
+                                self.FVs[thisfv] = 1    
+                                self.FV_list.append(thisfv)
+                        
+                self.sortFVs()
+                         
+                
+                
                 self.TPM = np.zeros((self.get_length_of_paradigm(), self.get_number_of_morphemes()))
                 for row_no in range(self.get_length_of_paradigm()):
                    self.TPM[row_no, self.row_number_to_morph_number[row_no]] = 1
                 self.TPM_inverse = np.linalg.pinv(self.TPM)
+
+ 
 
                 # -------------------  compute the matrix B ----------------------------------
                
@@ -132,7 +203,6 @@ class CParadigm:
                                 if FV not in self.morph_to_FV_dict[morpheme]:
                                         self.morph_to_FV_dict[morpheme][FV] = 0
                                 self.morph_to_FV_dict[morpheme][FV] += 1
-                
                 self.B = np.zeros((self.get_number_of_FVs(), self.get_number_of_morphemes()))
 
                 # Now we normalize for each morpheme 
@@ -150,12 +220,28 @@ class CParadigm:
                                         if FV in self.morph_to_FV_dict[morpheme]:
                                                 self.B[FV_number][morpheme_number]  += self.morph_to_FV_dict[morpheme][FV] / denominator
 
+               # -------------------  compute Phi   ----------------------------------
+                self.Phi = np.zeros((self.get_length_of_paradigm(), self.get_number_of_FVs()))
+                print ("Phi Matrix ")
+                for rowno in range(self.get_length_of_paradigm()):
+                        FVs = self.row_number_to_list_of_FVs[rowno]
+                        for fv in FVs:
+                                print ("236 ", fv)
+                                FV_index = self.get_FV_index(fv)
+                                self.Phi[rowno, FV_index] = 1
+                
+                
+                printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs())
+ 
+               # -------------------  compute Phi times B ----------------------------------
+                #Phi_times_B = =np.matmul(thisparadigm1., this.B)
+
 
         def printparadigm(self):
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
-                print ("\nThis TPM matrix Phi")
-                printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs() ) 
+                print ("\nThis TPM matrix  ")
+                printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
                
 
 
@@ -178,7 +264,7 @@ class CParadigm:
                 Y,s,Vh = np.linalg.svd(self.TPM)
 
                 pi = np.linalg.pinv(self.TPM)
-                print ("\npseudoinverse of Phi" )
+                print ("\npseudoinverse of TPM" )
                 printmatrix(pi, self.get_stringized_FVs(),self.morpheme_list)
 
 
@@ -207,9 +293,14 @@ with open(filename) as f:
    lines = f.readlines()
 thisparadigm1.readparadigm(lines)
 thisparadigm1.printparadigm()
+
  
+
+thisparadigm1.TPM = np.zeros((thisparadigm1.get_length_of_paradigm(), thisparadigm1.get_number_of_morphemes()))
  
- 
+
+
+
  
 if (True):
         print (" --------- Part 2---------------")
