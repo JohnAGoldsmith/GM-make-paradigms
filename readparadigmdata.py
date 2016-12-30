@@ -23,7 +23,7 @@ def makestring(arg):
         return  arg 
 
  
-def printmatrix(array,top_column_labels, side_row_labels,integerflag=False):
+def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
                 (number_of_rows, number_of_columns) = array.shape
                 if integerflag:
                         firstcolumnwidth = 13        
@@ -41,16 +41,30 @@ def printmatrix(array,top_column_labels, side_row_labels,integerflag=False):
                                 print ('%-11s'%side_row_labels[rowno],end="")
                         else:
                                 print  ('%-15s'%side_row_labels[rowno],end="")
+
+                        if PrintMax == True:
+                                max = -1000.0
+                                maxcols = []
+                                for colno in range(number_of_columns):
+                                        value = array.item(rowno, colno)
+                                        if value > max:
+                                                max = value
+
                         for colno in range(number_of_columns):
                                 value = array.item(rowno, colno)
-                                #print (value) 
                                 if value < 0.01 and value >  -.01:
                                         print ('     -  ', end="")
                                 elif integerflag:
                                         print ('%6d  '%int(value), end="")                    
                                 else:
-                                        print ( '%6.2f  '% value, end = "")
+                                        if PrintMax == True and value >= max:
+                                                print ( '%5.2f*  '% value, end = "")
+                                        else:
+                                                print ( '%6.2f  '% value, end = "")
                         print ()
+
+
+
 def scoreFV(FV):
                 if FV == "past":
                         score = 2
@@ -104,6 +118,8 @@ class CParadigm:
                 self.TPM_length = 0                          # number of entries in TPM (in paradigm)
                 self.TPM = np.zeros
                 self.B=np.zeros
+                self.Phi = np.zeros
+                self.Phi_times_B = np.zeros
 
         def     get_FVs(self):
                         return self.FV_list
@@ -169,10 +185,6 @@ class CParadigm:
                        FVs = sorted(items, key = scoreFV)                 #the FVs are now sorted inside each row
                        self.row_number_to_list_of_FVs.append(FVs)
                        self.row_number_to_morph_number.append(morpheme_index)
-                       #feature_set = set(items)
-                       #feature_set_tuple=tuple(set(items))  
-                       #self.row_number_to_set_of_FVs.append(feature_set)     # this is no longer used. 
-                       #self.FV_tuple_to_morpheme[feature_set_tuple] = morpheme  # this is ugly and should be done better
                        for thisfv in FVs:
                           if thisfv not in self.FVs:
                                 self.FVs[thisfv] = 1    
@@ -222,45 +234,55 @@ class CParadigm:
 
                # -------------------  compute Phi   ----------------------------------
                 self.Phi = np.zeros((self.get_length_of_paradigm(), self.get_number_of_FVs()))
-                print ("Phi Matrix ")
                 for rowno in range(self.get_length_of_paradigm()):
                         FVs = self.row_number_to_list_of_FVs[rowno]
                         for fv in FVs:
-                                print ("236 ", fv)
                                 FV_index = self.get_FV_index(fv)
                                 self.Phi[rowno, FV_index] = 1
-                
-                
-                printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs())
  
                # -------------------  compute Phi times B ----------------------------------
-                #Phi_times_B = =np.matmul(thisparadigm1., this.B)
+                self.Phi_times_B =np.matmul(self.Phi, self.B)
 
 
-        def printparadigm(self):
+
+        # When PrintMax flag is set to True, then an asterisk is printed next to the largest value in each row, in certain matrices.
+        def printparadigm(self,PrintMax = False):
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
+
                 print ("\nThis TPM matrix  ")
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
-               
 
 
-                print ("\n\nList of feature value labels and paradigm space dict:\n")
-                rowno =0
 
-                string1 ="{:<10} {:20} {:<20}" 
-                string2 ="  {:<10} {:20} {:<20}" 
-                print (string1.format('row number', 'feature values', 'morpheme number'))
-                for row_number in range(number_of_rows):
-                        print (string2.format(rowno, self.get_stringized_FV(row_number), self.row_number_to_morph_number[row_number] ))
-                        rowno += 1
-                 
                 print ("\n\nB matrix:")
                 printmatrix(self.B, self.get_morphemes(),self.get_FVs() )
-
                 
+                # --         PHI                -- #
+                print ("\n\nPhi Matrix ")
+                printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs(),True)
+
+                # --         Summary                -- #
+                print ("\n\nList of feature value labels and paradigm space dict:\n")
+                rowno =0
+                string1 ="{:<10} {:20} {:<20} {:<20}" 
+                string2 ="  {:<10} {:20} {:<20} {:<20}" 
+                print (string1.format('row number', 'feature values', 'morpheme number', 'morpheme'))
+                for row_number in range(number_of_rows):
+                        morpheme_number =  self.row_number_to_morph_number[row_number]
+                        morpheme = self.morpheme_list[morpheme_number]
+                        print (string2.format(rowno, self.get_stringized_FV(row_number),morpheme_number, morpheme))
+                        rowno += 1
+                 
+
+                # --         PHI times B                -- #
+                print ("\n\nPhi times B: Competition matrix ")
+                printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
 
 
+
+
+                # --         Pseudo inverse                -- #
                 Y,s,Vh = np.linalg.svd(self.TPM)
 
                 pi = np.linalg.pinv(self.TPM)
@@ -283,7 +305,7 @@ class CParadigm:
                                 print ('%6.2f  '% pi_times_matrix.item(rowno, colno), end = "")
                         print ()
 
-
+print ("\n"*50)
 print (" --------- Part 1---------------")
 
 filename = "russiannouns1.txt"
@@ -296,9 +318,8 @@ thisparadigm1.printparadigm()
 
  
 
-thisparadigm1.TPM = np.zeros((thisparadigm1.get_length_of_paradigm(), thisparadigm1.get_number_of_morphemes()))
+competition_matrix = np.zeros((thisparadigm1.get_length_of_paradigm(), thisparadigm1.get_number_of_morphemes()))
  
-
 
 
  
