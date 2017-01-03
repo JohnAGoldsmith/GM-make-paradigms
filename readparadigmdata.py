@@ -22,8 +22,8 @@ def makestring(arg):
     else:
         return  arg 
 
- 
-def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
+   # When PrintMax flag is set to True, then an asterisk is printed next to the largest value in each row, in certain matrices.
+def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False,outfilename=""):
                 (number_of_rows, number_of_columns) = array.shape
                 if integerflag:
                         firstcolumnwidth = 13        
@@ -63,6 +63,72 @@ def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,Print
                                                 print ( '%6.2f  '% value, end = "")
                         print ()
 
+                 
+def printmatrixtolatex(header, array, filename,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
+
+                outfile = open (filename, "a")
+                (number_of_rows, number_of_columns) = array.shape
+
+ 
+
+                start1      = """\\documentclass{article}\n"""
+                start2      = """\\usepackage{booktabs}\n"""
+                start3      = """\\begin{document}\n"""
+
+                
+                tablestart  = "\\begin{tabular}" + "{" + 'l' * number_of_columns + "}" 
+                tableend    = "\\end{tabular}\n" 
+                footer3     = "\\end{document}\n\n\n"
+
+                outfile.write (  start1 + start2 + start3 + header + "\n")
+                #print (start1, start2, start3)
+                outfile.write  ( tablestart + "\\toprule\n")
+
+ 
+
+                if integerflag:
+                        firstcolumnwidth = 13        
+                else:
+                        firstcolumnwidth =15
+                outfile.write (  "   " )
+                outfile.write (  " "*firstcolumnwidth )
+                for colno in range(number_of_columns):
+                        if colno >= len(top_column_labels):
+                                outfile.write("END")
+                                break
+                        print (  '% -8s '%makestring(top_column_labels[colno]),end=""  )
+                        outfile.write(  '&%-8s'%makestring(top_column_labels[colno]))
+                outfile.write ( "\n"  )
+                for rowno in range(number_of_rows):
+                        if integerflag:
+                                outfile.write (  '%-11s'%side_row_labels[rowno] )
+                        else:
+                                outfile.write  (  '%-15s'%side_row_labels[rowno] )
+
+                        if PrintMax == True:
+                                max = -1000.0
+                                maxcols = []
+                                for colno in range(number_of_columns):
+                                        value = array.item(rowno, colno)
+                                        if value > max:
+                                                max = value
+
+                        for colno in range(number_of_columns):
+                                value = array.item(rowno, colno)
+                                if value < 0.01 and value >  -.01:
+                                        outfile.write ( '&    -   ' )
+                                elif integerflag:
+                                        outfile.write (  '&  %4d  '%int(value) )                    
+                                else:
+                                        if PrintMax == True and value >= max:
+                                                outfile.write (    '& %4.2f*  '% value )
+                                        else:
+                                                outfile.write (  '& %5.2f  '% value )
+                        outfile.write ("\\\\\n")
+        
+                outfile.write( tableend)   
+                outfile.write( footer3)
+                outfile.close()
 
 
 def scoreFV(FV):
@@ -245,25 +311,32 @@ class CParadigm:
 
 
 
-        # When PrintMax flag is set to True, then an asterisk is printed next to the largest value in each row, in certain matrices.
-        def printparadigm(self,PrintMax = False):
+      
+        def printparadigm(self,outfilename ):
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
 
-                print ("\nThis TPM matrix  ")
+                header = "\n This TPM matrix  "
+                print (header)
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
+                printmatrixtolatex(header, self.TPM, outfilename, self.morpheme_list, self.get_stringized_FVs(),True) 
+           
 
-
-
-                print ("\n\nB matrix:")
+                header = "\n\nB matrix:"
+                print (header)
                 printmatrix(self.B, self.get_morphemes(),self.get_FVs() )
-                
-                # --         PHI                -- #
-                print ("\n\nPhi Matrix ")
-                printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs(),True)
+                printmatrixtolatex(header, self.B, outfilename, self.get_morphemes(),self.get_FVs() )
 
+
+
+                # --         PHI                -- #
+                header = "\n\nPhi Matrix "
+                print (header)
+                printmatrix(self.Phi,self.get_FVs(), outfilename, self.get_stringized_FVs(),True)
+                printmatrixtolatex( header,self.Phi,outfilename, self.get_FVs(),  self.get_stringized_FVs(),True)
                 # --         Summary                -- #
-                print ("\n\nList of feature value labels and paradigm space dict:\n")
+                header = "\n\nList of feature value labels and paradigm space dict:\n"
+                print (header)
                 rowno =0
                 string1 ="{:<10} {:20} {:<20} {:<20}" 
                 string2 ="  {:<10} {:20} {:<20} {:<20}" 
@@ -276,8 +349,10 @@ class CParadigm:
                  
 
                 # --         PHI times B                -- #
-                print ("\n\nPhi times B: Competition matrix ")
+                header ="\n\nPhi times B: Competition matrix "
+                print (header)
                 printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
+                printmatrixtolatex(header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
 
 
 
@@ -286,13 +361,14 @@ class CParadigm:
                 Y,s,Vh = np.linalg.svd(self.TPM)
 
                 pi = np.linalg.pinv(self.TPM)
-                print ("\npseudoinverse of TPM" )
+                header = "\npseudoinverse of TPM" 
+                print (header)
                 printmatrix(pi, self.get_stringized_FVs(),self.morpheme_list)
-
 
                 pi_times_matrix = np.matmul(pi,self.TPM)
 
-                print ("\npseudoinverse times matrix")
+                header = "\npseudoinverse times matrix"
+                print (header)
                 firstcolumnwidth =15
                 print ("  ", end="")
                 print (" "*firstcolumnwidth, end="")
@@ -309,13 +385,15 @@ print ("\n"*50)
 print (" --------- Part 1---------------")
 
 filename = "russiannouns1.txt"
+outfilename=    "russian-nouns-output.tex"
 thisparadigm1=CParadigm()
 
 with open(filename) as f:
    lines = f.readlines()
 thisparadigm1.readparadigm(lines)
-thisparadigm1.printparadigm()
-
+thisparadigm1.printparadigm(outfilename )
+ 
+ 
  
 
 competition_matrix = np.zeros((thisparadigm1.get_length_of_paradigm(), thisparadigm1.get_number_of_morphemes()))
@@ -331,7 +409,7 @@ if (True):
            lines = f.readlines()
         #lines = [line.strip() for line in open(filename)]
         thisparadigm2.readparadigm(lines)
-        thisparadigm2.printparadigm()
+        thisparadigm2.printparadigm(outfilename)
          
          
 
