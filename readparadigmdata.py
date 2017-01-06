@@ -76,11 +76,12 @@ def printmatrixtolatex(header, array, filename,top_column_labels, side_row_label
                 start3      = """\\begin{document}\n"""
 
                 
-                tablestart  = "\\begin{tabular}" + "{" + 'l' * number_of_columns + "}" 
+                tablestart  = "\\begin{tabular}" + "{" + 'l' * (number_of_columns+2) + "}" 
                 tableend    = "\\end{tabular}\n" 
+                skiplines   = "\n \\vspace{0.2in}\n\n"
                 footer3     = "\\end{document}\n\n\n"
 
-                outfile.write (  start1 + start2 + start3 + header + "\n")
+                outfile.write (  start1 + start2 + start3 + header + "\n\n")
                 #print (start1, start2, start3)
                 outfile.write  ( tablestart + "\\toprule\n")
 
@@ -98,7 +99,7 @@ def printmatrixtolatex(header, array, filename,top_column_labels, side_row_label
                                 break
                         print (  '% -8s '%makestring(top_column_labels[colno]),end=""  )
                         outfile.write(  '&%-8s'%makestring(top_column_labels[colno]))
-                outfile.write ( "\n"  )
+                outfile.write ( "\\\\ \n"  )
                 for rowno in range(number_of_rows):
                         if integerflag:
                                 outfile.write (  '%-11s'%side_row_labels[rowno] )
@@ -124,10 +125,12 @@ def printmatrixtolatex(header, array, filename,top_column_labels, side_row_label
                                                 outfile.write (    '& %4.2f*  '% value )
                                         else:
                                                 outfile.write (  '& %5.2f  '% value )
-                        outfile.write ("\\\\\n")
+                        outfile.write ("\\\\ \n")
         
-                outfile.write( tableend)   
+                outfile.write( tableend) 
+                outfile.write(skiplines)  
                 outfile.write( footer3)
+ 
                 outfile.close()
 
 
