@@ -186,6 +186,7 @@ class CParadigm:
                 self.B=np.zeros
                 self.Phi = np.zeros
                 self.Phi_times_B = np.zeros
+                self.Competition_Winner = list()        # A list, one per row of the paradigm; its value is the number of the morpheme which is calculated as maximum of Phi_time_B, the competition array.
 
         def     get_FVs(self):
                         return self.FV_list
@@ -297,6 +298,7 @@ class CParadigm:
                                         FV = self.get_FVs()[FV_number]
                                         if FV in self.morph_to_FV_dict[morpheme]:
                                                 self.B[FV_number][morpheme_number]  += self.morph_to_FV_dict[morpheme][FV] / denominator
+ 
 
                # -------------------  compute Phi   ----------------------------------
                 self.Phi = np.zeros((self.get_length_of_paradigm(), self.get_number_of_FVs()))
@@ -308,8 +310,23 @@ class CParadigm:
  
                # -------------------  compute Phi times B ----------------------------------
                 self.Phi_times_B =np.matmul(self.Phi, self.B)
-
-
+                self.Competition_Winner = list()
+                for row_number in  range(self.get_length_of_paradigm()):
+                        max = -1000
+                        maxcolumn = -1
+                        for column_number in range(self.get_number_of_morphemes()):
+                                if self.Phi_times_B[row_number,column_number] > max:
+                                        max = self.Phi_times_B[row_number,column_number]
+                                        maxcolumn = column_number
+                        TieCount = 0             
+                        for column_number in range(self.get_number_of_morphemes()):
+                                if self.Phi_times_B[row_number,column_number] >= max:
+                                        TieCount += 1                       
+                        if TieCount > 1:
+                                Problem_Tie_Flag = True
+                        self.Competition_Winner.append(maxcolumn)
+                        
+                
 
       
         def printparadigm(self,outfilename ):
@@ -353,8 +370,25 @@ class CParadigm:
                 print (header)
                 printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
                 printmatrixtolatex(header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
+                string3 ="{:<3}  {:<10} {:7}" 
+                print ("\n\nComparing truth to prediction\n")
+                
+                for row_number in  range(self.get_length_of_paradigm()):
+                        if  self.morpheme_list[self.row_number_to_morph_number[row_number]] == self.morpheme_list[self.Competition_Winner[row_number]]:
+                                ErrorFlag = False
+                        else:
+                                ErrorFlag = True       
+                                                             
+                        print (string3.format(row_number,self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), end = "")
+                        if ErrorFlag == True:
+                                print ("  error! ")
+                        else: 
+                                print ()      
+                        
+ 
 
 
+        
 
 
                 # --         Pseudo inverse                -- #
