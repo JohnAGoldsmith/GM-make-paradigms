@@ -63,26 +63,32 @@ def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,Print
                                         else:
                                                 print ( '%6.2f  '% value, end = "")
                         print ("")
-                 
-def printmatrixtolatex(header, array, filename,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
 
-                outfile = open (filename, "a")
-                (number_of_rows, number_of_columns) = array.shape
-
- 
+def openlatexfile(outfilename):
 
                 start1      = """\\documentclass{article}\n"""
                 start2      = """\\usepackage{booktabs}\n"""
                 start3      = """\\begin{document}\n"""
+                outfile = open (outfilename, "w")
+                outfile.write (  start1 + start2 + start3  )
+                return outfile
 
+def closelatexfile(outfile):
+                skiplines   = "\n \\vspace{0.2in}\n\n"
+                footer3     = "\\end{document}\n\n\n"
+                outfile.write(skiplines)  
+                outfile.write( footer3)
+                outfile.close()
+                outfile.close()
+ 
+def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
+
+                (number_of_rows, number_of_columns) = array.shape
                 
                 tablestart  = "\\begin{tabular}" + "{" + 'l' * (number_of_columns+2) + "}" 
                 tableend    = "\\end{tabular}\n" 
-                skiplines   = "\n \\vspace{0.2in}\n\n"
-                footer3     = "\\end{document}\n\n\n"
-
-                outfile.write (  start1 + start2 + start3 + header + "\n\n")
-                #print (start1, start2, start3)
+ 
+                outfile.write (  header + "\n\n")
                 outfile.write  ( tablestart + "\\toprule\n")
 
  
@@ -128,10 +134,8 @@ def printmatrixtolatex(header, array, filename,top_column_labels, side_row_label
                         outfile.write ("\\\\ \n")
         
                 outfile.write( tableend) 
-                outfile.write(skiplines)  
-                outfile.write( footer3)
  
-                outfile.close()
+ 
 
 
 def scoreFV(FV):
@@ -333,19 +337,24 @@ class CParadigm:
 
       
         def printparadigm(self,outfilename ):
+
+                outfile = openlatexfile (outfilename)
+
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
+
+
 
                 header = "\n This TPM matrix  "
                 print (header)
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
-                printmatrixtolatex(header, self.TPM, outfilename, self.morpheme_list, self.get_stringized_FVs(),True) 
+                printmatrixtolatex(outfile, header, self.TPM, outfilename, self.morpheme_list, self.get_stringized_FVs(),True) 
            
 
                 header = "\n\nB matrix:"
                 print (header)
                 printmatrix(self.B, self.get_morphemes(),self.get_FVs() )
-                printmatrixtolatex(header, self.B, outfilename, self.get_morphemes(),self.get_FVs() )
+                printmatrixtolatex(outfile, header, self.B, outfilename, self.get_morphemes(),self.get_FVs() )
 
 
 
@@ -353,7 +362,7 @@ class CParadigm:
                 header = "\n\nPhi Matrix "
                 print (header)
                 printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs(),True)
-                printmatrixtolatex( header,self.Phi,outfilename, self.get_FVs(),  self.get_stringized_FVs(),True)
+                printmatrixtolatex(outfile,  header,self.Phi,outfilename, self.get_FVs(),  self.get_stringized_FVs(),True)
                 # --         Summary                -- #
                 header = "\n\nList of feature value labels and paradigm space dict:\n"
                 print (header)
@@ -372,7 +381,7 @@ class CParadigm:
                 header ="\n\nPhi times B: Competition matrix "
                 print (header)
                 printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
-                printmatrixtolatex(header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
+                printmatrixtolatex(outfile, header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
                 string3 ="{:<3}  {:<10} {:7}" 
                 print ("\n\nComparing truth to prediction\n")
                 
@@ -419,7 +428,8 @@ class CParadigm:
                         for colno in range(number_of_columns):
                                 print ('%6.2f  '% pi_times_matrix.item(rowno, colno), end = "")
                         print ()
-
+                
+                closelatexfile(outfile)
 def main(argv):
 
 
@@ -443,8 +453,7 @@ def main(argv):
                 thisparadigm1.readparadigm(data)
                 thisparadigm1.printparadigm(outfilename )
                 cycleno += 1
-                 
-                 
+              
          
 
  
