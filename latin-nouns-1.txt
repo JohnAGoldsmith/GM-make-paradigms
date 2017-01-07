@@ -1,0 +1,15 @@
+# a am ae aa aas aarum iis
+# pattern 1
+nom sg a
+voc sg a 
+acc sg am
+gen sg ae
+dat sg ae
+abl  sg aa
+nom pl ae
+voc pl ae
+acc pl aas
+gen pl aarum
+dat pl iis
+abl  pl iis
+# end

@@ -11,6 +11,7 @@
 import numpy as np
 import csv 
 import math
+import sys
 
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
@@ -61,8 +62,7 @@ def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,Print
                                                 print ( '%5.2f*  '% value, end = "")
                                         else:
                                                 print ( '%6.2f  '% value, end = "")
-                        print ()
-
+                        print ("")
                  
 def printmatrixtolatex(header, array, filename,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
 
@@ -97,7 +97,7 @@ def printmatrixtolatex(header, array, filename,top_column_labels, side_row_label
                         if colno >= len(top_column_labels):
                                 outfile.write("END")
                                 break
-                        print (  '% -8s '%makestring(top_column_labels[colno]),end=""  )
+                        #print (  '% -8s '%makestring(top_column_labels[colno]),end=""  )
                         outfile.write(  '&%-8s'%makestring(top_column_labels[colno]))
                 outfile.write ( "\\\\ \n"  )
                 for rowno in range(number_of_rows):
@@ -352,7 +352,7 @@ class CParadigm:
                 # --         PHI                -- #
                 header = "\n\nPhi Matrix "
                 print (header)
-                printmatrix(self.Phi,self.get_FVs(), outfilename, self.get_stringized_FVs(),True)
+                printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs(),True)
                 printmatrixtolatex( header,self.Phi,outfilename, self.get_FVs(),  self.get_stringized_FVs(),True)
                 # --         Summary                -- #
                 header = "\n\nList of feature value labels and paradigm space dict:\n"
@@ -403,8 +403,10 @@ class CParadigm:
                 printmatrix(pi, self.get_stringized_FVs(),self.morpheme_list)
 
                 pi_times_matrix = np.matmul(pi,self.TPM)
-
+                (number_of_rows, number_of_columns) = pi_times_matrix.shape
+                
                 header = "\npseudoinverse times matrix"
+                
                 print (header)
                 firstcolumnwidth =15
                 print ("  ", end="")
@@ -418,49 +420,37 @@ class CParadigm:
                                 print ('%6.2f  '% pi_times_matrix.item(rowno, colno), end = "")
                         print ()
 
-print ("\n"*50)
-print (" --------- Part 1---------------")
-
-filename = "russiannouns1.txt"
-outfilename=    "russian-nouns-output.tex"
-thisparadigm1=CParadigm()
-
-with open(filename) as f:
-   lines = f.readlines()
-thisparadigm1.readparadigm(lines)
-thisparadigm1.printparadigm(outfilename )
- 
- 
- 
-
-competition_matrix = np.zeros((thisparadigm1.get_length_of_paradigm(), thisparadigm1.get_number_of_morphemes()))
- 
+def main(argv):
 
 
- 
-if (True):
-        print (" --------- Part 2---------------")
-        filename = "russiannouns2.txt"
-        thisparadigm2=CParadigm()
-        with open(filename) as f:
-           lines = f.readlines()
-        #lines = [line.strip() for line in open(filename)]
-        thisparadigm2.readparadigm(lines)
-        thisparadigm2.printparadigm(outfilename)
-         
+        print ("\n"*50)
+       
+
+        with open("config.txt") as config_file:
+                lines = config_file.read().splitlines()
+        number_of_cycles = len(lines)/ 2
+
+        cycleno = 1
+        while (len(lines)):
+                filename=lines.pop(0)
+                outfilename = lines.pop(0)
+                print (filename, " " ,outfilename)
+                print ("\n\n\n --------- Part", cycleno, "---------------")
+                thisparadigm1=CParadigm()
+
+                with open(filename) as f:
+                   data = f.readlines()
+                thisparadigm1.readparadigm(data)
+                thisparadigm1.printparadigm(outfilename )
+                cycleno += 1
+                 
+                 
          
 
+ 
 
 
-        matrix1 = np.zeros ((12,12))
 
-        print ("\nTPM1 inverse:")
-        pi = np.linalg.pinv(thisparadigm1.TPM)
-        printmatrix(pi,thisparadigm1.row_number_to_list_of_FVs, thisparadigm1.morpheme_list)
+if __name__=="__main__":
+        main(sys.argv)
 
-        print ("\nTPM2")
-        printmatrix(thisparadigm2.TPM,thisparadigm2.morpheme_list, thisparadigm2.row_number_to_list_of_FVs)
-
-        matrix1=np.matmul(thisparadigm1.TPM_inverse, thisparadigm2.TPM)
-        print ("\nTPM1 inverse times TPM2\n", matrix1)
-        printmatrix(matrix1,thisparadigm1.morpheme_list,thisparadigm2.morpheme_list)
