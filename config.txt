@@ -1,6 +1,6 @@
-latin-nouns-1.txt
-latin-nouns-1.tex
-latin-nouns-2.txt
-latin-nouns-2.tex
-latin-nouns-2-neuter.txt
-latin-nouns-2-neuter.tex
+russian-nouns-1.txt
+russian-nouns-1.tex
+russian-nouns-2.txt
+russian-nouns-2.tex
+russian-nouns-3.txt
+russian-nouns-3.tex

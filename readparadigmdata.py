@@ -103,7 +103,6 @@ def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_
                         if colno >= len(top_column_labels):
                                 outfile.write("END")
                                 break
-                        #print (  '% -8s '%makestring(top_column_labels[colno]),end=""  )
                         outfile.write(  '&%-8s'%makestring(top_column_labels[colno]))
                 outfile.write ( "\\\\ \n"  )
                 for rowno in range(number_of_rows):
@@ -187,7 +186,7 @@ class CParadigm:
                 self.morph_to_FV_dict = {} # key is a morpheme, value is a dict whose key is a FV and whose value is a count;
                 self.morph_to_FV_coordinate = {}
                 self.morpheme_list= []    
-                self.morpheme_to_index = {}                      # key is morpheme and value is an integer
+                self.morpheme_to_index = dict()                      # key is morpheme and value is an integer
                 self.TPM_length = 0                          # number of entries in TPM (in paradigm)
                 self.TPM = np.zeros
                 self.B=np.zeros
@@ -236,10 +235,11 @@ class CParadigm:
         # TPM: number of rows is the size of the paradigm, and the number of columns is the number of morphemes.
         # B:   number of rows is the number of FVs,        and the number of columns is the number of morphemes.
         # Phi is a matrix with sets of FVs (the paradigm positions) as its rows, and morphemes as its columns
-        def readparadigm(self,lines):
-                self.number_of_rows_in_paradigm = 0	
-                for lineno in range(len(lines)):
-                   line = lines[lineno]
+        def readparadigm(self,data):
+                self.number_of_rows_in_paradigm = 0
+                morphemes = ()	
+                for lineno in range(len(data)):
+                   line = data[lineno]
                    items = line.split()
                    if items[0] == "#":
                       if items[1] == "end":
@@ -444,10 +444,10 @@ def main(argv):
         while (len(lines)):
                 filename=lines.pop(0)
                 outfilename = lines.pop(0)
-                print (filename, " " ,outfilename)
+           
                 print ("\n\n\n --------- Part", cycleno, "---------------")
+                print (filename, " " ,outfilename)
                 thisparadigm1=CParadigm()
-
                 with open(filename) as f:
                    data = f.readlines()
                 thisparadigm1.readparadigm(data)
