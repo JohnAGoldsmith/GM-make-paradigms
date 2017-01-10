@@ -68,9 +68,10 @@ def openlatexfile(outfilename):
 
                 start1      = """\\documentclass{article}\n"""
                 start2      = """\\usepackage{booktabs}\n"""
-                start3      = """\\begin{document}\n"""
+                start3      = """\\usepackage[margin=1in]{geometry}\n"""
+                start4      = """\\begin{document}\n"""
                 outfile = open (outfilename, "w")
-                outfile.write (  start1 + start2 + start3  )
+                outfile.write (  start1 + start2 + start3 + start4 )
                 return outfile
 
 def closelatexfile(outfile):
@@ -88,7 +89,7 @@ def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_
                 tablestart  = "\\begin{tabular}" + "{" + 'l' * (number_of_columns+2) + "}" 
                 tableend    = "\\end{tabular}\n" 
  
-                outfile.write (  header + "\n\n")
+                outfile.write (  header + "\n\n\\nopagebreak\n")
                 outfile.write  ( tablestart + "\\toprule\n")
 
  
@@ -131,9 +132,8 @@ def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_
                                         else:
                                                 outfile.write (  '& %5.2f  '% value )
                         outfile.write ("\\\\ \n")
-        
                 outfile.write( tableend) 
- 
+                outfile.write( "\\vspace{.2in}") 
  
 
 
@@ -382,23 +382,32 @@ class CParadigm:
                 print (header)
                 printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
                 printmatrixtolatex(outfile, header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
-                string3 ="{:<3}  {:<10} {:7}" 
-                print ("\n\nComparing truth to prediction\n")
                 
+                
+                
+                
+                string3 ="{:<3}  {:<10} {:7}" 
+                string3a ="{:<3} & {:<10} &      {:7}" 
+                print ("\n\nComparing truth to prediction\n")
+                print ("\n\nComparing truth to prediction\n",file = outfile)
+                print ("\n\n\\begin{tabular}{llll}\n",file = outfile)
                 for row_number in  range(self.get_length_of_paradigm()):
                         if  self.morpheme_list[self.row_number_to_morph_number[row_number]] == self.morpheme_list[self.Competition_Winner[row_number]]:
                                 ErrorFlag = False
                         else:
                                 ErrorFlag = True       
                                                              
-                        print (string3.format(row_number,self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), end = "")
+                        print (string3.format(row_number,  self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), end = "")
+                        print (string3a.format(row_number, self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), file = outfile, end = "" )
                         if ErrorFlag == True:
                                 print ("  error! ")
+                                print ("  {\\em error!} \\\\ ",file = outfile )
                         else: 
                                 print ()      
+                                print ("\\\\", file=outfile)
                         
- 
-
+                print ("\\end{tabular} \n\n", file = outfile)
+                outfile.write( "\\vspace{.2in}") 
 
         
 
@@ -407,14 +416,14 @@ class CParadigm:
                 Y,s,Vh = np.linalg.svd(self.TPM)
 
                 pi = np.linalg.pinv(self.TPM)
-                header = "\npseudoinverse of TPM" 
+                header = "\n\npseudoinverse of TPM" 
                 print (header)
                 printmatrix(pi, self.get_stringized_FVs(),self.morpheme_list)
 
                 pi_times_matrix = np.matmul(pi,self.TPM)
-                (number_of_rows, number_of_columns) = pi_times_matrix.shape
+                #(number_of_rows, number_of_columns) = pi_times_matrix.shape
                 
-                header = "\npseudoinverse times matrix"
+                header = "\n\nPseudoinverse times matrix"
                 print (header)
                
                 printmatrix(pi_times_matrix,self.morpheme_list, self.morpheme_list,integerflag= False,PrintMax=False,)
