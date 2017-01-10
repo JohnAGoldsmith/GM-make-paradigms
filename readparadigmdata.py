@@ -349,7 +349,7 @@ class CParadigm:
                 print (header)
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
                 printmatrixtolatex(outfile, header, self.TPM, outfilename, self.morpheme_list, self.get_stringized_FVs(),True) 
-           
+                print ("\n\nRank of TPM: ", np.linalg.matrix_rank(self.TPM))
 
                 header = "\n\nB matrix:"
                 print (header)
@@ -415,19 +415,13 @@ class CParadigm:
                 (number_of_rows, number_of_columns) = pi_times_matrix.shape
                 
                 header = "\npseudoinverse times matrix"
-                
                 print (header)
-                firstcolumnwidth =15
-                print ("  ", end="")
-                print (" "*firstcolumnwidth, end="")
-                for colno in range(number_of_columns):
-                        print ('%-8s'%self.morpheme_list[colno], end="")
-                print ()
-                for rowno in range(number_of_rows):
-                        print ('%-15s'%self.morpheme_list[rowno],end="")
-                        for colno in range(number_of_columns):
-                                print ('%6.2f  '% pi_times_matrix.item(rowno, colno), end = "")
-                        print ()
+               
+                printmatrix(pi_times_matrix,self.morpheme_list, self.morpheme_list,integerflag= False,PrintMax=False,)
+                printmatrixtolatex(outfile,  header,pi_times_matrix,outfilename, self.morpheme_list,  self.morpheme_list,integerflag= False,PrintMax=False)
+                
+                                    
+                        
                 
                 closelatexfile(outfile)
 def main(argv):
