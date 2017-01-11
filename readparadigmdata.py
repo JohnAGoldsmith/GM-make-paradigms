@@ -193,7 +193,9 @@ class CParadigm:
                 self.Phi = np.zeros
                 self.Phi_times_B = np.zeros
                 self.Competition_Winner = list()        # A list, one per row of the paradigm; its value is the number of the morpheme which is calculated as maximum of Phi_time_B, the competition array.
-
+                self.pattern_label = "No label assigned."
+                self.language = "No language specified."
+                
         def     get_FVs(self):
                         return self.FV_list
         def     get_number_of_FVs(self):
@@ -244,8 +246,10 @@ class CParadigm:
                    if items[0] == "#":
                       if items[1] == "end":
                         break
-                      if items[1] == "pattern":
-                         pattern_label = items[2]
+                      elif items[1] == "pattern":
+                         self.pattern_label = items[2]
+                      elif items[1] == "language":
+                        self.language = items[2]
                       else:
                          morphemes = items[1:]
                          for morphno in  range(len(morphemes)):
@@ -342,9 +346,14 @@ class CParadigm:
 
                 number_of_rows    =  self.get_length_of_paradigm()
                 number_of_columns = self.get_number_of_morphemes()
-
-
-
+                
+                pattern1 = "Language: {:<15}\n"
+                pattern2 = "\\vspace{.1in}"
+                pattern3 = "Pattern:  {:<15}"
+                print (pattern1.format(self.language  ), file = outfile  )
+                print (pattern2,file=outfile)
+                print (pattern3.format( self.pattern_label), file = outfile  )
+                print (pattern2,file=outfile)
                 header = "\n This TPM matrix  "
                 print (header)
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 

@@ -1,5 +1,6 @@
 # nul a e u om y ov ax am ami j i u ej  
 # pattern 2neuter
+# language Russian
 nom sg nul 
 gen sg a
 acc sg nul
