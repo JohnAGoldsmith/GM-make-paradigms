@@ -12,9 +12,17 @@ import numpy as np
 import csv 
 import math
 import sys
+import json
 
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
+
+def dump_array_as_list(lang, label, a):
+    array_as_list = a.tolist()
+    f = open('array'+lang+'.'+label+'.json', 'w')
+    json.dump(array_as_list, f)
+    f.close()
+
 
 
 def makestring(arg):
@@ -195,7 +203,14 @@ class CParadigm:
                 self.Competition_Winner = list()        # A list, one per row of the paradigm; its value is the number of the morpheme which is calculated as maximum of Phi_time_B, the competition array.
                 self.pattern_label = "No label assigned."
                 self.language = "No language specified."
-                
+
+
+        def     get_TPM(self):
+                        return self.TPM
+        def     get_Phi(self):
+                        return self.Phi
+        def     get_morphemes(self):
+                        return self.morpheme_list
         def     get_FVs(self):
                         return self.FV_list
         def     get_number_of_FVs(self):
@@ -444,11 +459,16 @@ class CParadigm:
                 closelatexfile(outfile)
 def main(argv):
 
+        if len(sys.argv) > 1:
+            lang = '.'+sys.argv[1]
+        else:
+            lang = ''
+
 
         print ("\n"*50)
        
 
-        with open("config.txt") as config_file:
+        with open("config.txt"+lang) as config_file:
                 lines = config_file.read().splitlines()
         number_of_cycles = len(lines)/ 2
 
@@ -466,6 +486,20 @@ def main(argv):
                 thisparadigm1.printparadigm(outfilename )
                 cycleno += 1
               
+        #Save data in json files.
+        tpm = thisparadigm1.get_TPM()
+        dump_array_as_list(lang, 'TPM', tpm)
+        phi = thisparadigm1.get_Phi()
+        dump_array_as_list(lang, 'Phi', phi)
+        ml = thisparadigm1.get_morphemes()
+        f = open('morphemelist'+lang+'.json', 'w')
+        json.dump(ml, f)
+        f.close()
+        fvs = thisparadigm1.get_FVs()
+        f = open('FVlist'+lang+'.json', 'w')
+        json.dump(fvs, f)
+        f.close()
+        
          
 
  
