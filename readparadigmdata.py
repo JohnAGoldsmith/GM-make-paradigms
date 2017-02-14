@@ -31,6 +31,12 @@ def makestring(arg):
     else:
         return  arg 
 
+def makestring2(arg):
+    if type(arg) is list:
+        return ", ".join(arg)
+    else:
+        return  arg 
+
    # When PrintMax flag is set to True, then an asterisk is printed next to the largest value in each row, in certain matrices.
 def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False,outfilename=""):
                 (number_of_rows, number_of_columns) = array.shape
@@ -234,7 +240,7 @@ class CParadigm:
         def     get_stringized_FVs(self):
                         output = list()
                         for set_of_FVs in self.row_number_to_list_of_FVs:
-                                output.append("-".join(set_of_FVs))                                          
+                                output.append(", ".join(set_of_FVs))                                          
                         return output
 
         def     makePhi(self):
