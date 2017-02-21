@@ -491,20 +491,20 @@ def main(argv):
                 thisparadigm1.readparadigm(data)
                 thisparadigm1.printparadigm(outfilename )
                 cycleno += 1
-              
-        #Save data in json files.
-        tpm = thisparadigm1.get_TPM()
-        dump_array_as_list(lang, 'TPM', tpm)
-        phi = thisparadigm1.get_Phi()
-        dump_array_as_list(lang, 'Phi', phi)
-        ml = thisparadigm1.get_morphemes()
-        f = open('morphemelist'+lang+'.json', 'w')
-        json.dump(ml, f)
-        f.close()
-        fvs = thisparadigm1.get_FVs()
-        f = open('FVlist'+lang+'.json', 'w')
-        json.dump(fvs, f)
-        f.close()
+
+                #Save data in json files.
+                tpm = thisparadigm1.get_TPM()
+                dump_array_as_list(lang, 'TPM', tpm)
+                phi = thisparadigm1.get_Phi()
+                dump_array_as_list(lang, 'Phi', phi)
+                ml = thisparadigm1.get_morphemes()
+                f = open('morphemelist'+lang+'.json', 'w')
+                json.dump(ml, f)
+                f.close()
+                fvs = thisparadigm1.get_FVs()
+                f = open('FVlist'+lang+'.json', 'w')
+                json.dump(fvs, f)
+                f.close()
         
          
 
