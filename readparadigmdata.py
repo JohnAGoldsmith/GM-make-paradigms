@@ -36,6 +36,11 @@ def makestring2(arg):
         return ", ".join(arg)
     else:
         return  arg 
+def makestring_FV(arg):
+    if type(arg) is list:
+        return "\\FV{" + "-".join(arg) + "}"
+    else:
+        return  "\\FV{" + arg + "}" 
 
    # When PrintMax flag is set to True, then an asterisk is printed next to the largest value in each row, in certain matrices.
 def printmatrix(array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False,outfilename=""):
@@ -96,7 +101,7 @@ def closelatexfile(outfile):
                 outfile.close()
                 outfile.close()
  
-def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
+def printmatrixtolatex(outfile, header, array,top_column_labels, side_row_labels,integerflag=False,PrintMax = False):
 
                 (number_of_rows, number_of_columns) = array.shape
                 
@@ -122,6 +127,8 @@ def printmatrixtolatex(outfile, header, array, filename,top_column_labels, side_
                 outfile.write ( "\\\\ \n"  )
                 for rowno in range(number_of_rows):
                         if integerflag:
+                                #print ("labels: ", side_row_labels)
+                                #print (rowno, side_row_labels[rowno])
                                 outfile.write (  '%-11s'%side_row_labels[rowno] )
                         else:
                                 outfile.write  (  '%-15s'%side_row_labels[rowno] )
@@ -204,6 +211,7 @@ class CParadigm:
                 self.TPM_length = 0                          # number of entries in TPM (in paradigm)
                 self.TPM = np.zeros
                 self.B=np.zeros
+                self.count_array= np.zeros
                 self.Phi = np.zeros
                 self.Phi_times_B = np.zeros
                 self.Competition_Winner = list()        # A list, one per row of the paradigm; its value is the number of the morpheme which is calculated as maximum of Phi_time_B, the competition array.
@@ -253,25 +261,40 @@ class CParadigm:
                                         FVno = self.FV_to_index[FV]
                                         self.Phi[row_number,FVno] = 1
 		
-
-        # The paradigm includes a TPM which is an np.array, and B, which is also a np.arry.
+        # The input file includes a list of the morphemes, and a list of the paradigm entries,
+        # ending with a line # end
+        # and an optional list of counts in an array whose columns are the morphemes and the
+        # rows are the feature values, also ending with a line # end
+        # If the row ends in an integer, it is treated as the count of the morpheme which is in the penultimate position of the line.
+        # If the optional section is missing, the program will stop reading at a
+        # line marked # completed.
+        # The paradigm includes a TPM which is an np.array, and B, which is also a np.array.
         # TPM: number of rows is the size of the paradigm, and the number of columns is the number of morphemes.
         # B:   number of rows is the number of FVs,        and the number of columns is the number of morphemes.
         # Phi is a matrix with sets of FVs (the paradigm positions) as its rows, and morphemes as its columns
         def readparadigm(self,data):
                 self.number_of_rows_in_paradigm = 0
-                morphemes = ()	
+                morphemes = ()
+                state = "state_0"
                 for lineno in range(len(data)):
                    line = data[lineno]
                    items = line.split()
                    if items[0] == "#":
+                      if items[1] == "completed":
+                          state = "completed"
+                          break
                       if items[1] == "end":
-                        break
+                        if state == "read_paradigm":
+                            state = "read_counts"
+                        if state == "read_counts":
+                           state= "completed"
+                           break
                       elif items[1] == "pattern":
                          self.pattern_label = items[2]
                       elif items[1] == "language":
                         self.language = items[2]
                       else:
+                         state = "read_paradigm"
                          morphemes = items[1:]
                          for morphno in  range(len(morphemes)):
                             thismorph = morphemes[morphno] 
@@ -280,13 +303,17 @@ class CParadigm:
                    else:                                                # read the entries, one row per position in paradigm
                        self.number_of_rows_in_paradigm += 1
                        morpheme = items.pop(-1)
+                       if morpheme.isdigit():
+                           this_count = int(morpheme)                   #THIS IS WHAT I CHANGED BUT ITS NOT RIGHT March 6 2017 jg
+                           morpheme = items.pop(-1)
+                       else: this_count = 1
                        morpheme_index=self.morpheme_to_index[morpheme]
                        FVs = sorted(items, key = scoreFV)                 #the FVs are now sorted inside each row
                        self.row_number_to_list_of_FVs.append(FVs)
                        self.row_number_to_morph_number.append(morpheme_index)
                        for thisfv in FVs:
                           if thisfv not in self.FVs:
-                                self.FVs[thisfv] = 1    
+                                self.FVs[thisfv] = this_count
                                 self.FV_list.append(thisfv)
                         
                 self.sortFVs()
@@ -314,8 +341,14 @@ class CParadigm:
                                 if FV not in self.morph_to_FV_dict[morpheme]:
                                         self.morph_to_FV_dict[morpheme][FV] = 0
                                 self.morph_to_FV_dict[morpheme][FV] += 1
-                self.B = np.zeros((self.get_number_of_FVs(), self.get_number_of_morphemes()))
+                                print (FV, morpheme)
 
+
+
+                                
+                self.B = np.zeros((self.get_number_of_FVs(), self.get_number_of_morphemes()))
+                self.count_array = np.zeros((self.get_number_of_FVs(), self.get_number_of_morphemes()))
+                
                 # Now we normalize for each morpheme 
                 for morpheme_number in range(self.get_number_of_morphemes()):
                         morpheme = self.get_morpheme(morpheme_number)
@@ -329,6 +362,7 @@ class CParadigm:
                                 for FV_number in range(self.get_number_of_FVs()):
                                         FV = self.get_FVs()[FV_number]
                                         if FV in self.morph_to_FV_dict[morpheme]:
+                                                self.count_array[FV_number][morpheme_number] += self.morph_to_FV_dict[morpheme][FV]
                                                 self.B[FV_number][morpheme_number]  += self.morph_to_FV_dict[morpheme][FV] / denominator
  
 
@@ -343,20 +377,27 @@ class CParadigm:
                # -------------------  compute Phi times B ----------------------------------
                 self.Phi_times_B =np.matmul(self.Phi, self.B)
                 self.Competition_Winner = list()
+                self.Competition_Tie = list()  # This is a vector whose index is the row number, and whose value is a list, with members when there is a tie in that row.
                 for row_number in  range(self.get_length_of_paradigm()):
                         max = -1000
                         maxcolumn = -1
+                        self.Competition_Tie.append(list())
+                        self.Competition_Winner.append(None)
                         for column_number in range(self.get_number_of_morphemes()):
                                 if self.Phi_times_B[row_number,column_number] > max:
-                                        max = self.Phi_times_B[row_number,column_number]
-                                        maxcolumn = column_number
-                        TieCount = 0             
+                                        max = self.Phi_times_B[row_number,column_number]  
+                                        maxcolumn = column_number   
                         for column_number in range(self.get_number_of_morphemes()):
                                 if self.Phi_times_B[row_number,column_number] >= max:
-                                        TieCount += 1                       
-                        if TieCount > 1:
-                                Problem_Tie_Flag = True
-                        self.Competition_Winner.append(maxcolumn)
+                                        morpheme = self.morpheme_list[column_number]
+                                        self.Competition_Tie[row_number].append(morpheme)                    
+                        if len(self.Competition_Tie[row_number] ) == 1:                                 
+                                winning_morph = self.morpheme_list[maxcolumn]
+                                print (winning_morph + "396")
+                                self.Competition_Winner[row_number] = winning_morph
+                        else:
+                                self.Competition_Winner[row_number] = None
+                                
                         
                 
 
@@ -378,13 +419,22 @@ class CParadigm:
                 header = "\n This TPM matrix  "
                 print (header)
                 printmatrix(self.TPM,self.morpheme_list, self.get_stringized_FVs(),True) 
-                printmatrixtolatex(outfile, header, self.TPM, outfilename, self.morpheme_list, self.get_stringized_FVs(),True) 
+                printmatrixtolatex(outfile, header, self.TPM,  self.morpheme_list, self.get_stringized_FVs(),True)
                 print ("\n\nRank of TPM: ", np.linalg.matrix_rank(self.TPM))
+                
+                header = "\n\nCount array:"
+                print (header)
+                printmatrix(self.count_array, self.get_morphemes(),self.get_FVs() ,   True, outfile)
+                printmatrixtolatex(outfile, header, self.count_array, self.get_morphemes(),self.get_FVs() , integerflag = True)
+
+
+
+
 
                 header = "\n\nB matrix:"
                 print (header)
                 printmatrix(self.B, self.get_morphemes(),self.get_FVs() )
-                printmatrixtolatex(outfile, header, self.B, outfilename, self.get_morphemes(),self.get_FVs() )
+                printmatrixtolatex(outfile, header, self.B, self.get_morphemes(),self.get_FVs() )
 
 
 
@@ -392,7 +442,7 @@ class CParadigm:
                 header = "\n\nPhi Matrix "
                 print (header)
                 printmatrix(self.Phi,self.get_FVs(), self.get_stringized_FVs(),True)
-                printmatrixtolatex(outfile,  header,self.Phi,outfilename, self.get_FVs(),  self.get_stringized_FVs(),True)
+                printmatrixtolatex(outfile,  header,self.Phi, self.get_FVs(),  self.get_stringized_FVs(),True)
                 # --         Summary                -- #
                 header = "\n\nList of feature value labels and paradigm space dict:\n"
                 print (header)
@@ -411,28 +461,40 @@ class CParadigm:
                 header ="\n\nPhi times B: Competition matrix "
                 print (header)
                 printmatrix(self.Phi_times_B,self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
-                printmatrixtolatex(outfile, header, self.Phi_times_B, outfilename, self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
+                printmatrixtolatex(outfile, header, self.Phi_times_B,  self.get_morphemes(),self.get_stringized_FVs(),PrintMax = True)
                 
                 
                 
                 
-                string3 ="{:<3}  {:<10} {:7}" 
-                string3a ="{:<3} & {:<10} &      {:7}" 
-                print ("\n\nComparing truth to prediction\n")
-                print ("\n\nComparing truth to prediction\n",file = outfile)
+                string3 ="{:<30}  {:<10} {:7}" 
+                string3a ="{:<30} & {:<10} &      {:7} & " 
+                error_string = "\{\\em       should be \{0:1s\}."
+                string4 = "\n\nComparing truth to prediction     true form     predicted form(s)\\\\"
+                print (string4)
+                print (string4,file = outfile)
                 print ("\n\n\\begin{tabular}{llll}\n",file = outfile)
+                print ("& FVs & truth & prediction\\\\ \n",file = outfile)
+                
                 for row_number in  range(self.get_length_of_paradigm()):
-                        if  self.morpheme_list[self.row_number_to_morph_number[row_number]] == self.morpheme_list[self.Competition_Winner[row_number]]:
-                                ErrorFlag = False
-                        else:
-                                ErrorFlag = True       
-                                                             
-                        print (string3.format(row_number,  self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), end = "")
-                        print (string3a.format(row_number, self.morpheme_list[self.row_number_to_morph_number[row_number]],  self.morpheme_list[self.Competition_Winner[row_number]]), file = outfile, end = "" )
-                        if ErrorFlag == True:
-                                print ("  error! ")
-                                print ("  {\\em error!} \\\\ ",file = outfile )
-                        else: 
+                        stringized_FVs = self.get_stringized_FVs()[row_number]
+                        real_winner = self.morpheme_list[self.row_number_to_morph_number[row_number]]
+                        print (string3.format(row_number, stringized_FVs, real_winner), end = "")
+                        print (string3a.format(row_number,stringized_FVs, real_winner), file = outfile, end = "" )
+                        if len(self.Competition_Tie[row_number]) > 1:  # there was a tie
+                               if real_winner in self.Competition_Tie[row_number]:
+                                   print ("There was a tie among these: " + "-".join(self.Competition_Tie[row_number]))
+                                   print ("There was a tie among these: " + "-".join(self.Competition_Tie[row_number]), file=outfile)  
+                               else:
+                                   print ("A set of false winners: " + "-".join(self.Competition_Tie[row_number] ) + "\\\\" )
+                                   print ("A set of false winners: " + "-".join(self.Competition_Tie[row_number]) + "\\\\", file=outfile)                              
+                        else:                                
+                                predicted_winner =  self.Competition_Winner[row_number] 
+                                print ("488"+ predicted_winner)    
+                                if  real_winner == predicted_winner:
+                                        ErrorFlag = False
+                                else: 
+                                        print ( predicted_winner + "(error)", file=outfile)
+                                
                                 print ()      
                                 print ("\\\\", file=outfile)
                         
@@ -440,7 +502,6 @@ class CParadigm:
                 outfile.write( "\\vspace{.2in}") 
 
         
-
 
                 # --         Pseudo inverse                -- #
                 Y,s,Vh = np.linalg.svd(self.TPM)
@@ -457,7 +518,7 @@ class CParadigm:
                 print (header)
                
                 printmatrix(pi_times_matrix,self.morpheme_list, self.morpheme_list,integerflag= False,PrintMax=False,)
-                printmatrixtolatex(outfile,  header,pi_times_matrix,outfilename, self.morpheme_list,  self.morpheme_list,integerflag= False,PrintMax=False)
+                printmatrixtolatex(outfile,  header,pi_times_matrix, self.morpheme_list,  self.morpheme_list,integerflag= False,PrintMax=False)
                 
                                     
                         
