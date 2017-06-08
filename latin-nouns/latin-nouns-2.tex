@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage{booktabs}
+\begin{document}
+
+ This TPM matrix  
+
+\begin{tabular}{llllllllll}\toprule
+                &us      &e       &um      &ii      &oo      &oos     &oorum   &iis     \\ 
+nom-sg     &     1  &    -   &    -   &    -   &    -   &    -   &    -   &    -   \\ 
+voc-sg     &    -   &     1  &    -   &    -   &    -   &    -   &    -   &    -   \\ 
+acc-sg     &    -   &    -   &     1  &    -   &    -   &    -   &    -   &    -   \\ 
+gen-sg     &    -   &    -   &    -   &     1  &    -   &    -   &    -   &    -   \\ 
+dat-sg     &    -   &    -   &    -   &    -   &     1  &    -   &    -   &    -   \\ 
+abl-sg     &    -   &    -   &    -   &    -   &     1  &    -   &    -   &    -   \\ 
+nom-pl     &    -   &    -   &    -   &     1  &    -   &    -   &    -   &    -   \\ 
+voc-pl     &    -   &    -   &    -   &     1  &    -   &    -   &    -   &    -   \\ 
+acc-pl     &    -   &    -   &    -   &    -   &    -   &     1  &    -   &    -   \\ 
+gen-pl     &    -   &    -   &    -   &    -   &    -   &    -   &     1  &    -   \\ 
+dat-pl     &    -   &    -   &    -   &    -   &    -   &    -   &    -   &     1  \\ 
+abl-pl     &    -   &    -   &    -   &    -   &    -   &    -   &    -   &     1  \\ 
+\end{tabular}
+
+
+B matrix:
+
+\begin{tabular}{llllllllll}\toprule
+                  &us      &e       &um      &ii      &oo      &oos     &oorum   &iis     \\ 
+nom            &  0.71  &    -   &    -   &  0.35  &    -   &    -   &    -   &    -   \\ 
+acc            &    -   &    -   &  0.71  &    -   &    -   &  0.71  &    -   &    -   \\ 
+gen            &    -   &    -   &    -   &  0.35  &    -   &    -   &  0.71  &    -   \\ 
+dat            &    -   &    -   &    -   &    -   &  0.41  &    -   &    -   &  0.41  \\ 
+voc            &    -   &  0.71  &    -   &  0.35  &    -   &    -   &    -   &    -   \\ 
+abl            &    -   &    -   &    -   &    -   &  0.41  &    -   &    -   &  0.41  \\ 
+sg             &  0.71  &  0.71  &  0.71  &  0.35  &  0.82  &    -   &    -   &    -   \\ 
+pl             &    -   &    -   &    -   &  0.71  &    -   &  0.71  &  0.71  &  0.82  \\ 
+\end{tabular}
+
+
+Phi Matrix 
+
+\begin{tabular}{llllllllll}\toprule
+                &nom     &acc     &gen     &dat     &voc     &abl     &sg      &pl      \\ 
+nom-sg     &     1  &    -   &    -   &    -   &    -   &    -   &     1  &    -   \\ 
+voc-sg     &    -   &    -   &    -   &    -   &     1  &    -   &     1  &    -   \\ 
+acc-sg     &    -   &     1  &    -   &    -   &    -   &    -   &     1  &    -   \\ 
+gen-sg     &    -   &    -   &     1  &    -   &    -   &    -   &     1  &    -   \\ 
+dat-sg     &    -   &    -   &    -   &     1  &    -   &    -   &     1  &    -   \\ 
+abl-sg     &    -   &    -   &    -   &    -   &    -   &     1  &     1  &    -   \\ 
+nom-pl     &     1  &    -   &    -   &    -   &    -   &    -   &    -   &     1  \\ 
+voc-pl     &    -   &    -   &    -   &    -   &     1  &    -   &    -   &     1  \\ 
+acc-pl     &    -   &     1  &    -   &    -   &    -   &    -   &    -   &     1  \\ 
+gen-pl     &    -   &    -   &     1  &    -   &    -   &    -   &    -   &     1  \\ 
+dat-pl     &    -   &    -   &    -   &     1  &    -   &    -   &    -   &     1  \\ 
+abl-pl     &    -   &    -   &    -   &    -   &    -   &     1  &    -   &     1  \\ 
+\end{tabular}
+
+
+Phi times B: Competition matrix 
+
+\begin{tabular}{llllllllll}\toprule
+                  &us      &e       &um      &ii      &oo      &oos     &oorum   &iis     \\ 
+nom-sg         & 1.41*  &  0.71  &  0.71  &  0.71  &  0.82  &    -   &    -   &    -   \\ 
+voc-sg         &  0.71  & 1.41*  &  0.71  &  0.71  &  0.82  &    -   &    -   &    -   \\ 
+acc-sg         &  0.71  &  0.71  & 1.41*  &  0.35  &  0.82  &  0.71  &    -   &    -   \\ 
+gen-sg         &  0.71  &  0.71  &  0.71  &  0.71  & 0.82*  &    -   &  0.71  &    -   \\ 
+dat-sg         &  0.71  &  0.71  &  0.71  &  0.35  & 1.22*  &    -   &    -   &  0.41  \\ 
+abl-sg         &  0.71  &  0.71  &  0.71  &  0.35  & 1.22*  &    -   &    -   &  0.41  \\ 
+nom-pl         &  0.71  &    -   &    -   & 1.06*  &    -   &  0.71  &  0.71  &  0.82  \\ 
+voc-pl         &    -   &  0.71  &    -   & 1.06*  &    -   &  0.71  &  0.71  &  0.82  \\ 
+acc-pl         &    -   &    -   &  0.71  &  0.71  &    -   & 1.41*  &  0.71  &  0.82  \\ 
+gen-pl         &    -   &    -   &    -   &  1.06  &    -   &  0.71  & 1.41*  &  0.82  \\ 
+dat-pl         &    -   &    -   &    -   &  0.71  &  0.41  &  0.71  &  0.71  & 1.22*  \\ 
+abl-pl         &    -   &    -   &    -   &  0.71  &  0.41  &  0.71  &  0.71  & 1.22*  \\ 
+\end{tabular}
+
+ \vspace{0.2in}
+
+\end{document}
+
+

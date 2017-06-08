@@ -1,0 +1,15 @@
+# us e um ii oo oos oorum iis aa
+# pattern 2-neuter
+nom sg um
+voc sg um
+acc sg um
+gen sg ii
+dat sg oo
+abl sg oo
+nom pl aa
+voc pl aa
+acc pl aa
+gen pl oorum
+dat pl iis
+abl pl iis 
+# end

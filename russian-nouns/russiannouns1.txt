@@ -1,0 +1,15 @@
+# nul a e u om y ov ax am ami j i  
+# pattern 1
+nom sg nul 
+gen sg a
+acc sg nul
+loc sg e 
+dat sg u
+inst sg om
+nom pl y
+gen pl  ov 
+acc pl  y 
+loc pl  ax
+dat pl  am
+inst pl   ami
+# end
