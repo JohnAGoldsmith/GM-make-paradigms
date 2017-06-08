@@ -223,6 +223,10 @@ class CParadigm:
                         return self.TPM
         def     get_Phi(self):
                         return self.Phi
+        def     get_B(self):
+                        return self.B
+        def     get_row_number_to_morph_number(self):
+                        return self.row_number_to_morph_number
         def     get_morphemes(self):
                         return self.morpheme_list
         def     get_FVs(self):
@@ -565,6 +569,12 @@ def main(argv):
         fvs = thisparadigm1.get_FVs()
         f = open('FVlist'+lang+'.json', 'w')
         json.dump(fvs, f)
+        f.close()
+        B = thisparadigm1.get_B()
+        dump_array_as_list(lang, 'B', B)
+        rnmn = thisparadigm1.get_row_number_to_morph_number()
+        f = open('y'+lang+'.json', 'w')
+        json.dump(rnmn, f)
         f.close()
         
          
