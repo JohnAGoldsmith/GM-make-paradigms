@@ -550,7 +550,7 @@ def main(argv):
         cmd = 'mkdir -p '+lang #Make sure that the subdirectory exists
         os.system(cmd)
 
-        conf_file = lang+"/"+para+".config.txt"
+        conf_file = lang+"/config.txt."+para
         if not os.path.exists(conf_file):
             print('No configuration file named', conf_file, '\nExiting.')
             sys.exit()
