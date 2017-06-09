@@ -22,9 +22,9 @@ def dump_to_json(lang, para, label, a, array_=False):
     if os.path.isdir(lang):
         if array_:
             a = a.tolist()
-            f = open(lang+'/array.'+label+'.'+para+'.json', 'w')
+            f = open(lang+'/array.'+para+'.'+label+'.json', 'w')
         else:
-            f = open(lang+'/'+label+'.'+para+'.json', 'w')
+            f = open(lang+'/'+para+'.'+label+'.json', 'w')
         json.dump(a, f)
         f.close()
     else:
