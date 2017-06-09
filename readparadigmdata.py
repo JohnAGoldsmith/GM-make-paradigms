@@ -13,15 +13,22 @@ import csv
 import math
 import sys
 import json
+import os
 
 np.set_printoptions(suppress=True)
 np.set_printoptions(precision=2)
 
-def dump_array_as_list(lang, label, a):
-    array_as_list = a.tolist()
-    f = open('array'+lang+'.'+label+'.json', 'w')
-    json.dump(array_as_list, f)
-    f.close()
+def dump_to_json(lang, para, label, a, array_=False):
+    if os.path.isdir(lang):
+        if array_:
+            a = a.tolist()
+            f = open(lang+'/array.'+label+'.'+para+'.json', 'w')
+        else:
+            f = open(lang+'/'+label+'.'+para+'.json', 'w')
+        json.dump(a, f)
+        f.close()
+    else:
+        print('The directory', lang, 'failed to get created')
 
 
 
@@ -530,16 +537,25 @@ class CParadigm:
                 closelatexfile(outfile)
 def main(argv):
 
-        if len(sys.argv) > 1:
-            lang = '.'+sys.argv[1]
+        if len(sys.argv) > 2:
+            lang = sys.argv[1] #Subdirectory listed by language
+            para = sys.argv[2] #Paradigm type: e.g. "geben-stems"
         else:
-            lang = ''
+            print('No language and paradigm type specified as  command line arguments.\nNow exiting.')
+            sys.exit()
 
 
         print ("\n"*50)
        
+        cmd = 'mkdir -p '+lang #Make sure that the subdirectory exists
+        os.system(cmd)
 
-        with open("config.txt"+lang) as config_file:
+        conf_file = lang+"/"+para+".config.txt"
+        if not os.path.exists(conf_file):
+            print('No configuration file named', conf_file, '\nExiting.')
+            sys.exit()
+
+        with open(conf_file) as config_file:
                 lines = config_file.read().splitlines()
         number_of_cycles = len(lines)/ 2
 
@@ -551,6 +567,11 @@ def main(argv):
                 print ("\n\n\n --------- Part", cycleno, "---------------")
                 print (filename, " " ,outfilename)
                 thisparadigm1=CParadigm()
+                filename = lang+'/'+filename
+                outfilename = lang+'/'+outfilename
+                if not os.path.exists(filename):
+                    print('No data file named', filename, '\nExiting.')
+                    sys.exit()
                 with open(filename) as f:
                    data = f.readlines()
                 thisparadigm1.readparadigm(data)
@@ -558,24 +579,21 @@ def main(argv):
                 cycleno += 1
               
         #Save data in json files.
-        tpm = thisparadigm1.get_TPM()
-        dump_array_as_list(lang, 'TPM', tpm)
-        phi = thisparadigm1.get_Phi()
-        dump_array_as_list(lang, 'Phi', phi)
-        ml = thisparadigm1.get_morphemes()
-        f = open('morphemelist'+lang+'.json', 'w')
-        json.dump(ml, f)
-        f.close()
-        fvs = thisparadigm1.get_FVs()
-        f = open('FVlist'+lang+'.json', 'w')
-        json.dump(fvs, f)
-        f.close()
-        B = thisparadigm1.get_B()
-        dump_array_as_list(lang, 'B', B)
-        rnmn = thisparadigm1.get_row_number_to_morph_number()
-        f = open('y'+lang+'.json', 'w')
-        json.dump(rnmn, f)
-        f.close()
+        if lang != '':
+            cmd = 'mkdir -p '+lang #Make sure that the subdirectory exists
+            os.system(cmd)
+            tpm = thisparadigm1.get_TPM()
+            dump_to_json(lang, para, 'TPM', tpm, True)
+            phi = thisparadigm1.get_Phi()
+            dump_to_json(lang, para, 'Phi', phi, True)
+            B = thisparadigm1.get_B()
+            dump_to_json(lang, para, 'B', B, True)
+            ml = thisparadigm1.get_morphemes()
+            dump_to_json(lang, para, 'morphemelist', ml)
+            fvs = thisparadigm1.get_FVs()
+            dump_to_json(lang, para, 'FVlist', fvs)
+            rnmn = thisparadigm1.get_row_number_to_morph_number()
+            dump_to_json(lang, para, 'y', rnmn)
         
          
 
